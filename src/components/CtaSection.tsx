@@ -1,11 +1,13 @@
-import { memo, useState } from 'react';
+import { memo, useState, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar as CalendarIcon, ArrowRight, Shield, ChevronLeft, ChevronRight, Clock, CheckCircle2 } from 'lucide-react';
 
 const CtaSection = () => {
-  const [step, setStep] = useState<'date' | 'time' | 'confirm'>('date');
+  const [step, setStep] = useState<'date' | 'time' | 'email' | 'confirm'>('date');
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const times = ['09:00 AM', '10:30 AM', '01:00 PM', '02:30 PM', '04:00 PM', '05:30 PM'];
@@ -14,6 +16,36 @@ const CtaSection = () => {
     setStep('date');
     setSelectedDate(null);
     setSelectedTime(null);
+    setEmail('');
+  };
+
+  const finalizeBooking = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!email || !selectedDate || !selectedTime) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/book-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          date: selectedDate,
+          time: selectedTime
+        })
+      });
+
+      if (response.ok) {
+        setStep('confirm');
+      } else {
+        console.error('Booking failed');
+        alert("There was an issue processing your booking. Please try again.");
+      }
+    } catch (err) {
+      console.error('Booking error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -167,7 +199,7 @@ const CtaSection = () => {
                              key={t}
                              onClick={() => {
                                setSelectedTime(t);
-                               setStep('confirm');
+                               setStep('email');
                              }}
                              className="py-4 px-6 bg-zinc-800/50 border border-zinc-800 rounded-xl text-zinc-300 text-sm font-bold hover:border-blue-500 hover:text-white transition-all text-center"
                            >
@@ -175,6 +207,49 @@ const CtaSection = () => {
                            </button>
                          ))}
                       </div>
+                    </motion.div>
+                  )}
+
+                  {step === 'email' && (
+                    <motion.div 
+                      key="email"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-6"
+                    >
+                      <button 
+                        onClick={() => setStep('time')}
+                        className="text-blue-500 text-xs font-bold uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all"
+                      >
+                        <ChevronLeft size={14} /> Back to times
+                      </button>
+                      <div className="text-white font-bold text-lg mb-4">Confirm your details</div>
+                      <form onSubmit={finalizeBooking} className="space-y-4">
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Email Address</label>
+                          <input 
+                            required
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-zinc-800/50 border border-zinc-800 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 transition-all"
+                            placeholder="your@email.com"
+                          />
+                        </div>
+                        <button
+                          disabled={isSubmitting}
+                          type="submit"
+                          className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-500 transition-all flex items-center justify-center gap-2"
+                        >
+                          {isSubmitting ? (
+                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : 'Finalize Booking'}
+                        </button>
+                      </form>
+                      <p className="text-[10px] text-zinc-500 text-center uppercase tracking-widest leading-relaxed">
+                        By confirming, you agree to receive a calendar invitation and one follow-up reminder.
+                      </p>
                     </motion.div>
                   )}
 
