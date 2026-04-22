@@ -49,14 +49,40 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => document.getElementById('book-call')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-6 py-2.5 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
+          <form 
+            name="booking" 
+            method="POST" 
+            data-netlify="true"
+            className="flex items-center bg-zinc-900 border border-zinc-800 rounded-full pl-4 pr-1 py-1 focus-within:border-blue-500 transition-colors"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData as any).toString(),
+              }).then(() => {
+                document.getElementById('book-call')?.scrollIntoView({ behavior: 'smooth' });
+              });
+            }}
           >
-            Book Free Strategy Call
-          </motion.button>
+            <input type="hidden" name="form-name" value="booking" />
+            <input 
+              type="email" 
+              name="email" 
+              placeholder="Enter email" 
+              required 
+              className="bg-transparent border-none text-xs text-white focus:outline-none w-32 md:w-40"
+            />
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-full font-bold text-xs hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20 whitespace-nowrap"
+            >
+              Book Call
+            </motion.button>
+          </form>
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -82,15 +108,41 @@ const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <button 
-            onClick={() => {
-              setIsOpen(false);
-              document.getElementById('book-call')?.scrollIntoView({ behavior: 'smooth' });
+          <form 
+            name="booking-mobile" 
+            method="POST" 
+            data-netlify="true"
+            className="mt-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              fetch("/", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams(formData as any).toString(),
+              }).then(() => {
+                setIsOpen(false);
+                document.getElementById('book-call')?.scrollIntoView({ behavior: 'smooth' });
+              });
             }}
-            className="bg-blue-600 text-white w-full py-4 rounded-xl font-bold mt-4 shadow-lg shadow-blue-900/20 uppercase tracking-wider text-sm"
           >
-            Book Free Call
-          </button>
+            <input type="hidden" name="form-name" value="booking-mobile" />
+            <div className="flex flex-col gap-3">
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="Enter your email" 
+                required 
+                className="bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+              />
+              <button 
+                type="submit"
+                className="bg-blue-600 text-white w-full py-4 rounded-xl font-bold shadow-lg shadow-blue-900/20 uppercase tracking-wider text-sm"
+              >
+                Book Free Call
+              </button>
+            </div>
+          </form>
         </motion.div>
       )}
     </nav>

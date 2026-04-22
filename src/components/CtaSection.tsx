@@ -40,7 +40,19 @@ const CtaSection = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/book-call', {
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          'form-name': 'booking',
+          email,
+          date: `${currentMonthName} ${selectedDate}, ${currentYear}`,
+          time: selectedTime
+        }).toString()
+      });
+
+      // Also call our local API for email sending
+      await fetch('/api/book-call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

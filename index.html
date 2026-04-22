@@ -7,6 +7,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Hidden Netlify form for bot detection -->
+    <form name="booking" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="name" />
+      <input type="email" name="email" />
+      <input type="text" name="date" />
+      <input type="text" name="time" />
+    </form>
+    <form name="booking-mobile" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="email" name="email" />
+    </form>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
