@@ -4,13 +4,28 @@ import { Calendar as CalendarIcon, ArrowRight, Shield, ChevronLeft, ChevronRight
 
 const CtaSection = () => {
   const [step, setStep] = useState<'date' | 'time' | 'email' | 'confirm'>('date');
+  const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const today = new Date();
+  const currentMonthName = viewDate.toLocaleString('default', { month: 'long' });
+  const currentYear = viewDate.getFullYear();
+  const currentMonth = viewDate.getMonth();
+
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+  // Adjust for Mon-Sun grid (0 = Sun, so we want Mon-Sun: 1 2 3 4 5 6 0)
+  const emptySlots = (firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1);
+  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
   const times = ['09:00 AM', '10:30 AM', '01:00 PM', '02:30 PM', '04:00 PM', '05:30 PM'];
+
+  const handleMonthChange = (direction: number) => {
+    setViewDate(new Date(currentYear, currentMonth + direction, 1));
+  };
 
   const resetBooking = () => {
     setStep('date');
@@ -30,7 +45,7 @@ const CtaSection = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          date: selectedDate,
+          date: `${currentMonthName} ${selectedDate}, ${currentYear}`,
           time: selectedTime
         })
       });
@@ -89,7 +104,7 @@ const CtaSection = () => {
                {[
                  "30-minute deep dive into your operations",
                  "Custom automation gap identification",
-                 "Scaled roadmap for 2026 growth",
+                 `Scaled roadmap for ${currentYear + 1} growth`,
                  "Direct access to our lead engineers"
                ].map((item, i) => (
                  <div key={i} className="flex items-center gap-4 text-zinc-300">
@@ -126,13 +141,23 @@ const CtaSection = () => {
                     <Clock size={20} />
                   </div>
                   <div>
-                    <div className="font-bold">March 2026</div>
+                    <div className="font-bold">{currentMonthName} {currentYear}</div>
                     <div className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">Standard Time (GMT+0)</div>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"><ChevronLeft size={20} /></button>
-                  <button className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"><ChevronRight size={20} /></button>
+                  <button 
+                    onClick={() => handleMonthChange(-1)}
+                    className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button 
+                    onClick={() => handleMonthChange(1)}
+                    className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
                 </div>
              </div>
 
@@ -150,11 +175,14 @@ const CtaSection = () => {
                         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => <div key={d}>{d}</div>)}
                       </div>
                       <div className="grid grid-cols-7 gap-2">
-                        <div className="aspect-square" />
-                        <div className="aspect-square" />
-                        {days.map(d => {
+                        {Array.from({ length: emptySlots }).map((_, i) => (
+                          <div key={`empty-${i}`} className="aspect-square" />
+                        ))}
+                        {daysArray.map(d => {
                           const isSelected = selectedDate === d;
-                          const isDisabled = d < 24;
+                          const dateObj = new Date(currentYear, currentMonth, d);
+                          const isDisabled = dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                          
                           return (
                             <button
                               key={d}
@@ -192,7 +220,7 @@ const CtaSection = () => {
                       >
                         <ChevronLeft size={14} /> Back to dates
                       </button>
-                      <div className="text-white font-bold text-lg mb-4">Available times for March {selectedDate}</div>
+                      <div className="text-white font-bold text-lg mb-4">Available times for {currentMonthName} {selectedDate}</div>
                       <div className="grid grid-cols-2 gap-3">
                          {times.map(t => (
                            <button
@@ -265,7 +293,7 @@ const CtaSection = () => {
                       </div>
                       <h4 className="text-2xl font-bold text-white">Booking Confirmed!</h4>
                       <p className="text-zinc-400 text-sm">
-                        March {selectedDate}, 2026 at {selectedTime}<br/>
+                        {currentMonthName} {selectedDate}, {currentYear} at {selectedTime}<br/>
                         A calendar invite has been sent to your email.
                       </p>
                       <button 
